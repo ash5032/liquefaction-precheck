@@ -1,1 +1,19 @@
-# liquefaction-precheck
+# 액상화 예비평가: BH-16-1 수정 검토
+
+이번 오류와 직접 관련된 파일을 비교하기 위한 검토용 저장소입니다. 전체 사이트 배포본이 아닙니다.
+
+- main: 로컬 기존 커밋 `78dfcf17cf7a9c983d1226e3763230a4e23a2401`의 관련 소스 3개
+- PR: `dist/auto-depth.js`, `dist/app.js`, `dist/index.html` 수정 및 `test-range-conflict.cjs` 추가
+- 회귀검사 실행: 수정 브랜치에서 `node test-range-conflict.cjs`
+
+## 기대 동작
+
+연속 관찰기록 범위가 3개 미만이고 눈금 검증점이 5개 이상이면, 관찰기록 충돌은 경고로 표시하고 이미지의 심도 범위 및 경계를 유지합니다. 눈금 검증 부족, 충분한 관찰기록과의 충돌 및 이미지 자체 검출 오류는 기존 중단 처리를 유지합니다. 입력 geometry는 직접 변경하지 않습니다.
+
+BH-16-1 확인값: 표 눈금 0~19m, 경계 2.3 / 8.0 / 13.3 / 15.3m, 시추종료 15.3m. 표 하단 눈금과 시추종료 깊이를 구분합니다.
+
+## 검증 상태
+
+기존 전체 로컬 프로젝트에서 `test-range-conflict.cjs`, `test-engine.cjs`, `test-fill-export.cjs`, `test-spt-rows.cjs`, `test-spt-left.cjs` 모두 통과했습니다. 추가로 눈금 검증점 4/5개 경계 조건과 입력 객체 불변성을 확인했습니다.
+
+실제 브라우저에서 BH-16-1을 첨부한 화면 검증은 미완료입니다. Sites Git 서버 연결 오류로 운영 사이트에 아직 배포하지 못했습니다. 이 GitHub PR을 병합해도 기존 Sites 사이트가 자동으로 업데이트되지 않습니다.
