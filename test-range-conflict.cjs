@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict'),A=require('./dist/auto-depth.js');
+const make=(anchors=39)=>({start:0,end:19,top:844,bottom:2446,rulerAnchors:anchors,boundaries:[2.3,8,13.3,15.3].map(depth=>({depth,y:844+depth*84.3158,estimated:true}))});
+const original=make(),partial='심도 0.0 - 8.0 m';
+const result=A.reconcile(original,partial);
+assert(!result.error);assert(result.observationWarning);assert(result.observationReview);assert.deepEqual(result.boundaries,original.boundaries);assert.deepEqual(original,make());
+assert(A.reconcile(make(0),partial).error);
+assert(A.reconcile(make(),'심도 0-8\n심도 8-13.3\n심도 13.3-15.3').error);
+const matched=A.reconcile(make(),'심도 0-2.3\n심도 2.3-8\n심도 8-13.3\n심도 13.3-15.3');assert(!matched.error);assert(matched.observationMatched);
+const bad={error:'No image boundaries',boundaries:[]};assert.equal(A.reconcile(bad,partial),bad);
+console.log('PASS BH16-1 partial OCR warning, image boundaries preserved, input immutable, weak calibration rejection, complete conflict rejection, complete match and geometry failure');
