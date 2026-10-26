@@ -138,8 +138,9 @@ async function extract(){
   state.layers=E.withAutoLayerTops([...prefix,...geometry.boundaries.map((b,i)=>({bottom:b.depth,soil:'지층 '+(i+1),clayConfirmed:false,estimated:true,pageEnd:!!b.pageEnd}))]);
   renderTables();dirty();drawRegions();
   const sampleNotice=await createSampleRows(pg,geometry);
+  const observationNotice=geometry.observationWarning?' 관찰기록 교차확인 경고: '+geometry.observationWarning+' 눈금과 이미지 경계를 기준으로 만든 후보를 원본과 확인하세요.':'';
   const note=(state.config.imageAuto?'자동 범위: '+pg.autoRange.source+' · ':'수동 범위 · ')+(geometry.rulerAnchors?'국부 눈금 '+geometry.rulerAnchors+'개로 보정 · ':'시작·끝선 비례 추정 · ')+'입력 범위 '+geometry.start+'~'+geometry.end+' m · 하단 후보 '+geometry.boundaries.map(b=>b.depth+' m').join(', ')+'. 파란 시작선·끝선이 입력 심도 위치와 일치하는지 확인하세요. 선이 다르면 기준선 보정에서 후보를 바꾸세요.';
-  $('autoReadNote').textContent=note+sampleNotice;status(note+sampleNotice+(geometry.continued?' 마지막 행은 현재 이미지 하단이며 지층이 다음 장으로 이어집니다.':'')+' SPT 값은 자동 생성·변경하지 않습니다.');
+  $('autoReadNote').textContent=note+sampleNotice+observationNotice;status(note+sampleNotice+observationNotice+(geometry.continued?' 마지막 행은 현재 이미지 하단이며 지층이 다음 장으로 이어집니다.':'')+' SPT 값은 자동 생성·변경하지 않습니다.');
  }catch(e){status('경계 읽기 실패: '+e.message,true);}finally{setBusy(false);}
 }
 async function createSampleRows(pg,geometry){

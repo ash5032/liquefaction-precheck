@@ -13,8 +13,13 @@ function layout(words,w,h,found){
  const right=sample&&center(sample)>.45?[Math.max(.4,center(sample)-.06),y,Math.min(.97,center(sample)+.06),.97]:null;
  return {ruler,observation,right,headerLocated:!!(depth||obs||sample),multipleLogs};
 }
+function observationConflict(geometry,chain,message){
+ if(chain.length<3&&geometry.rulerAnchors>=5)return {...geometry,observationWarning:message,observationReview:true};
+ return {...geometry,error:message};
+}
 function reconcile(geometry,text){
  if(!geometry||geometry.error)return geometry;
+ const originalGeometry=geometry;geometry={...geometry,boundaries:geometry.boundaries.map(b=>({...b}))};
  const chain=chainOf(ranges(text)),end=geometry.end,expected=chain.map(p=>Math.round(p.bottom*10)/10).filter(d=>d<=end+.05),actual=geometry.boundaries.filter(p=>!p.pageEnd);
  if(chain.length>=3&&Math.abs(chain.at(-1).bottom-end)<.05&&expected.length===actual.length+1&&actual.every((b,i)=>Math.abs(b.depth-expected[i])<=.25)){
   const b={depth:end,y:geometry.bottom,estimated:true};geometry.boundaries.push(b);actual.push(b);
@@ -29,10 +34,10 @@ function reconcile(geometry,text){
   for(const p of chain){
    if(p.bottom>end+.05)continue;
    if(![geometry.start,...actual.map(b=>b.depth)].some(d=>Math.abs(d-p.top)<=.15))continue;
-   if(actual.some(b=>b.depth>p.top+.15&&b.depth<p.bottom-.15))return {...geometry,error:'관찰기록상 하나의 지층 안에서 추가 경계선이 검출됐습니다. 원본과 기준선을 확인하세요.'};
+   if(actual.some(b=>b.depth>p.top+.15&&b.depth<p.bottom-.15))return observationConflict(originalGeometry,chain,'관찰기록상 하나의 지층 안에서 추가 경계선이 검출됐습니다. 원본과 기준선을 확인하세요.');
    const b=actual.filter(b=>b.depth>p.top).sort((a,b)=>Math.abs(a.depth-p.bottom)-Math.abs(b.depth-p.bottom))[0];
    if(!b)continue;const delta=Math.abs(b.depth-p.bottom);
-   if(delta>.15&&delta<.35)return {...geometry,error:'관찰기록 숫자와 지층 경계선 사이에 0.15 m를 넘는 차이가 있습니다. 원본을 확인하세요.'};
+   if(delta>.15&&delta<.35)return observationConflict(originalGeometry,chain,'관찰기록 숫자와 지층 경계선 사이에 0.15 m를 넘는 차이가 있습니다. 원본을 확인하세요.');
    if(delta<=.15&&Math.abs(p.bottom*10-Math.round(p.bottom*10))<.001){b.depth=p.bottom;b.observationCorrected=true;}
   }
  }
